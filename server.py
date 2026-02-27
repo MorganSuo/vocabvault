@@ -200,6 +200,19 @@ def load_data():
     try:
         response = supabase.table('vocabulary').select('*').order('created_at', desc=True).execute()
         vocabulary = response.data or []
+        # 转为前端驼峰格式
+        def to_front_item(row):
+            return {
+                'id': row.get('id'),
+                'word': row.get('word'),
+                'phonetic': row.get('phonetic'),
+                'audioUrl': row.get('audio_url'),
+                'meanings': row.get('meanings') or [],
+                'dateAdded': row.get('date_added'),
+                'tags': row.get('tags') or [],
+                'notes': row.get('notes') or ''
+            }
+        vocabulary = [to_front_item(r) for r in vocabulary]
         print('Loaded vocabulary count:', len(vocabulary))
         tags_response = supabase.table('custom_tags').select('*').execute()
         custom_tags = tags_response.data or []
@@ -224,12 +237,23 @@ def save_data():
     print('Saving vocabulary count:', len(vocabulary))
     print('Saving custom_tags:', custom_tags)
     try:
-        # Clear and insert vocabulary one by one
+        # 转换前端驼峰字段为 Supabase 下划线字段
+        def to_db_item(v):
+            return {
+                'id': v.get('id'),
+                'word': v.get('word'),
+                'phonetic': v.get('phonetic'),
+                'audio_url': v.get('audioUrl'),
+                'meanings': v.get('meanings'),
+                'date_added': v.get('dateAdded'),
+                'tags': v.get('tags'),
+                'notes': v.get('notes')
+            }
+        # 先清空再逐条插入
         supabase.table('vocabulary').delete().neq('id', 'x' * 100).execute()
         for v in vocabulary:
-            supabase.table('vocabulary').insert(v).execute()
+            supabase.table('vocabulary').insert(to_db_item(v)).execute()
         
-        # Clear and insert custom tags
         supabase.table('custom_tags').delete().neq('id', -1).execute()
         for t in custom_tags:
             supabase.table('custom_tags').insert({'tag': t}).execute()
