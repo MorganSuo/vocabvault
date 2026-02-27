@@ -1314,9 +1314,11 @@
                         })
                     });
                     console.log('Save response status:', res.status);
+                    const responseText = await res.text();
+                    console.log('Save response:', responseText);
                     if (!res.ok) {
-                        const err = await res.text();
-                        console.error('Save failed:', err);
+                        console.error('Save failed:', responseText);
+                        alert('Save failed: ' + responseText);
                     } else {
                         console.log('Saved to cloud successfully');
                     }
