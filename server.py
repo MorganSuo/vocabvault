@@ -237,6 +237,8 @@ def save_data():
         return jsonify({'ok': True})
     except Exception as e:
         print('保存数据失败:', e)
+        import traceback
+        print(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 
