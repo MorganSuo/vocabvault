@@ -17,6 +17,9 @@ MINIMAX_API_KEY = os.environ.get('MINIMAX_API_KEY', '')
 FREE_DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en'
 MINIMAX_URL = 'https://api.minimax.io/anthropic/v1/messages'
 
+# 部分环境要求带 User-Agent
+FREE_DICT_HEADERS = {'User-Agent': 'VocabVault/1.0 (https://vocabvault-k72p.onrender.com)'}
+
 
 def transform_free_dictionary(data):
     """将 Free Dictionary API 响应转为前端统一格式"""
@@ -58,6 +61,11 @@ def index():
     return send_from_directory(BASE, 'index.html')
 
 
+@app.route('/api/health')
+def health():
+    return jsonify({'ok': True, 'service': 'vocabvault'})
+
+
 @app.route('/api/search', methods=['POST'])
 def search():
     data = request.get_json() or {}
@@ -68,18 +76,31 @@ def search():
     # 单词则优先 Free Dictionary API
     if re.match(r"^[a-zA-Z\-']+$", query):
         try:
-            r = requests.get(f'{FREE_DICT_URL}/{query}', timeout=8)
+            r = requests.get(
+                f'{FREE_DICT_URL}/{query}',
+                timeout=10,
+                headers=FREE_DICT_HEADERS
+            )
             if r.status_code == 200:
                 out = transform_free_dictionary(r.json())
                 if out:
                     return jsonify(out)
+        except requests.RequestException as e:
+            err_msg = getattr(e, 'message', str(e))
+            if hasattr(e, 'response') and e.response is not None:
+                try:
+                    err_msg = e.response.text[:200] if e.response.text else str(e)
+                except Exception:
+                    pass
+            print('Free Dictionary API 失败:', err_msg)
         except Exception as e:
-            if getattr(e, 'response', None) and getattr(e.response, 'status_code', None) != 404:
-                print('Free Dictionary API 失败，回退 MiniMax:', e)
+            print('Free Dictionary 解析异常:', e)
 
-    # MiniMax
+    # 需要 MiniMax 时（短语或 Free Dictionary 未返回）
     if not MINIMAX_API_KEY:
-        return jsonify({'error': '未配置 MINIMAX_API_KEY'}), 500
+        return jsonify({
+            'error': '请先在 Render 环境变量中配置 MINIMAX_API_KEY。单个英文单词可先用免费词典查询。'
+        }), 200
 
     prompt = f'''你是一个专业的英语词典和语言学习助手。请为用户提供关于"{query}"的详细信息，包括：
 1. 单词/短语及其正确拼写
@@ -138,8 +159,15 @@ def search():
             return jsonify(json.loads(m.group(0)))
         return jsonify({'word': query, 'rawResponse': content, 'isRawFormat': True})
     except requests.RequestException as e:
-        err = e.response.json() if hasattr(e, 'response') and e.response is not None else {}
-        msg = err.get('error', {}).get('message', str(e))
+        err = {}
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                err = e.response.json() if e.response.headers.get('content-type', '').startswith('application/json') else {}
+            except Exception:
+                pass
+        msg = err.get('error', {}).get('message', None) if isinstance(err.get('error'), dict) else str(e)
+        if not msg:
+            msg = getattr(e, 'message', str(e))
         return jsonify({'error': f'API调用失败: {msg}'}), 500
 
 
