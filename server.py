@@ -6,6 +6,7 @@ import os
 import re
 import json
 import requests
+from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -73,33 +74,33 @@ def search():
     if not query:
         return jsonify({'error': '请提供查询内容'}), 400
 
-    # 单词则优先 Free Dictionary API
-    if re.match(r"^[a-zA-Z\-']+$", query):
-        try:
-            r = requests.get(
-                f'{FREE_DICT_URL}/{query}',
-                timeout=10,
-                headers=FREE_DICT_HEADERS
-            )
-            if r.status_code == 200:
-                out = transform_free_dictionary(r.json())
-                if out:
-                    return jsonify(out)
-        except requests.RequestException as e:
-            err_msg = getattr(e, 'message', str(e))
-            if hasattr(e, 'response') and e.response is not None:
-                try:
-                    err_msg = e.response.text[:200] if e.response.text else str(e)
-                except Exception:
-                    pass
-            print('Free Dictionary API 失败:', err_msg)
-        except Exception as e:
-            print('Free Dictionary 解析异常:', e)
+    # 先尝试 Free Dictionary API（单词和短语都试，短语可能 404）
+    encoded = quote(query, safe="")
+    try:
+        r = requests.get(
+            f'{FREE_DICT_URL}/{encoded}',
+            timeout=10,
+            headers=FREE_DICT_HEADERS
+        )
+        if r.status_code == 200:
+            out = transform_free_dictionary(r.json())
+            if out:
+                return jsonify(out)
+    except requests.RequestException as e:
+        err_msg = getattr(e, 'message', str(e))
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                err_msg = e.response.text[:200] if e.response.text else str(e)
+            except Exception:
+                pass
+        print('Free Dictionary API 失败:', err_msg)
+    except Exception as e:
+        print('Free Dictionary 解析异常:', e)
 
-    # 需要 MiniMax 时（短语或 Free Dictionary 未返回）
+    # 短语/表达或 Free Dictionary 未命中：使用 MiniMax
     if not MINIMAX_API_KEY:
         return jsonify({
-            'error': '请先在 Render 环境变量中配置 MINIMAX_API_KEY。单个英文单词可先用免费词典查询。'
+            'error': '短语与表达类查询需在 Render 环境变量中配置 MINIMAX_API_KEY 后才能使用。'
         }), 200
 
     prompt = f'''你是一个专业的英语词典和语言学习助手。请为用户提供关于"{query}"的详细信息，包括：
