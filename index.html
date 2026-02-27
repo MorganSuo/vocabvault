@@ -1419,7 +1419,10 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('本地服务器未运行');
+                    const msg = (response.status >= 500)
+                        ? '服务暂时不可用，请稍后再试'
+                        : (response.status === 400 ? '请求参数有误' : '请求失败 (' + response.status + ')');
+                    throw new Error(msg);
                 }
 
                 const data = await response.json();
@@ -1733,7 +1736,7 @@
         // Update favorite button state
         function updateFavoriteButton() {
             const btn = document.getElementById('favoriteBtn');
-            if (currentResult && isWordFavorited(currentResult.word)) {
+            if (currentResult && isFavorited(currentResult.word)) {
                 btn.classList.add('active');
             } else {
                 btn.classList.remove('active');
@@ -1764,7 +1767,7 @@
                     word: currentResult.word,
                     phonetic: document.getElementById('resultPhonetic').textContent,
                     audioUrl: currentAudioUrl,
-                    meanings: currentResult.meanings,
+                    meanings: currentResult.meanings || [],
                     dateAdded: new Date().toISOString(),
                     tags: [...selectedTags],
                     notes: ''
