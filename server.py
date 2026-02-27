@@ -26,8 +26,11 @@ supabase: Client = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print(f'Supabase 初始化成功, URL: {SUPABASE_URL[:30]}...')
     except Exception as e:
         print('Supabase 初始化失败:', e)
+else:
+    print('Supabase 未配置: SUPABASE_URL 或 SUPABASE_KEY 为空')
 
 FREE_DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en'
 MINIMAX_URL = 'https://api.minimax.io/anthropic/v1/messages'
@@ -191,11 +194,13 @@ def search():
 @app.route('/api/sync/load', methods=['GET'])
 def load_data():
     """加载云端数据"""
+    print('load_data called, supabase is:', supabase)
     if not supabase:
         return jsonify({'error': 'Cloud sync not configured'}), 500
     try:
         response = supabase.table('vocabulary').select('*').order('created_at', desc=True).execute()
         vocabulary = response.data or []
+        print('Loaded vocabulary count:', len(vocabulary))
         tags_response = supabase.table('custom_tags').select('*').execute()
         custom_tags = tags_response.data or []
         return jsonify({
