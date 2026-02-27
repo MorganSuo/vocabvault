@@ -1424,7 +1424,17 @@
 
                 const data = await response.json();
 
-                // 解析响应
+                // 后端直接返回错误（如未配置 Key）
+                if (data.error) {
+                    return { error: data.error };
+                }
+
+                // 后端已返回统一格式（Free Dictionary 或已解析的 MiniMax），直接使用
+                if (data.word && (data.definitions || data.meanings)) {
+                    return data;
+                }
+
+                // 解析响应（原始 MiniMax content[] 格式）
                 if (data.content && data.content.length > 0) {
                     let content = '';
                     for (const item of data.content) {
