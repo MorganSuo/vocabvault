@@ -152,6 +152,13 @@
             border-radius: var(--radius-full);
             font-size: 13px;
             color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .stats-badge:hover {
+            background: var(--border);
+            color: var(--primary);
         }
 
         .stats-badge strong {
@@ -560,8 +567,14 @@
         .tag-selection-title {
             font-size: 14px;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 4px;
             color: var(--text);
+        }
+
+        .tag-selection-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
         }
 
         .tag-selection-list {
@@ -1058,7 +1071,7 @@
             </button>
         </div>
         <div class="header-actions">
-            <div class="stats-badge">
+            <div class="stats-badge" onclick="scrollToVocabulary()" role="button" title="跳转到我的词汇库">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                     <path d="M2 17l10 5 10-5"/>
@@ -1205,17 +1218,18 @@
 
                 <div class="tag-selection" id="tagSelection">
                     <div class="tag-selection-title">为词汇添加标签：</div>
+                    <p class="tag-selection-hint">点击标签可选中/取消，收藏时会一并保存</p>
                     <div class="tag-selection-list" id="tagSelectionList">
                     </div>
                     <div class="tag-input-wrapper">
-                        <input type="text" id="customTagInput" placeholder="添加自定义标签...">
-                        <button onclick="addCustomTag()">添加</button>
+                        <input type="text" id="customTagInput" placeholder="添加自定义标签..." onkeyup="if(event.key==='Enter')addCustomTag()">
+                        <button type="button" onclick="addCustomTag()">添加</button>
                     </div>
                 </div>
             </div>
 
             <!-- Vocabulary List -->
-            <section class="vocabulary-section">
+            <section class="vocabulary-section" id="vocabularySection">
                 <div class="vocabulary-header">
                     <h2 class="vocabulary-title">我的词汇库</h2>
                     <div class="vocabulary-controls">
@@ -1782,17 +1796,18 @@
             }
         }
 
-        // Render tag selection
+        // Render tag selection：显示全部标签，已选高亮
         function renderTagSelection() {
             const container = document.getElementById('tagSelectionList');
-            const availableTags = [...presetTags, ...store.customTags].filter(t => !selectedTags.includes(t));
-
-            container.innerHTML = availableTags.map(tag => `
-                <span class="tag-selectable" onclick="selectTag('${tag}')">${tag}</span>
-            `).join('');
+            const allTags = [...presetTags, ...store.customTags];
+            container.innerHTML = allTags.map(tag => {
+                const selected = selectedTags.includes(tag);
+                const safe = ('' + tag).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+                return `<span class="tag-selectable${selected ? ' selected' : ''}" data-tag="${safe}" onclick="selectTag(this.getAttribute('data-tag'))">${safe}</span>`;
+            }).join('');
         }
 
-        // Select tag
+        // Select tag：点击切换选中/取消
         function selectTag(tag) {
             const index = selectedTags.indexOf(tag);
             if (index === -1) {
@@ -1800,17 +1815,7 @@
             } else {
                 selectedTags.splice(index, 1);
             }
-
-            // Update UI
             renderTagSelection();
-            const allTags = document.querySelectorAll('.tag-selectable');
-            allTags.forEach(t => {
-                if (selectedTags.includes(t.textContent)) {
-                    t.classList.add('selected');
-                } else {
-                    t.classList.remove('selected');
-                }
-            });
         }
 
         // Add custom tag
@@ -1824,8 +1829,11 @@
                 renderCustomTags();
                 updateStats();
                 input.value = '';
+            }
+            if (tag) {
+                if (!selectedTags.includes(tag)) selectedTags.push(tag);
                 renderTagSelection();
-                showToast('标签已添加');
+                showToast('标签已添加并选中');
             }
         }
 
@@ -1838,10 +1846,11 @@
             }
 
             container.innerHTML = store.customTags.map(tag => {
-                const count = store.vocabulary.filter(v => v.tags.includes(tag)).length;
+                const count = store.vocabulary.filter(v => (v.tags || []).includes(tag)).length;
+                const safe = ('' + tag).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
                 return `
-                    <span class="tag tag-custom" onclick="filterByTag('${tag}', this)">
-                        ${tag} <span class="tag-count">${count}</span>
+                    <span class="tag tag-custom" data-tag="${safe}" onclick="filterByTag(this.getAttribute('data-tag'), this)">
+                        ${safe} <span class="tag-count">${count}</span>
                     </span>
                 `;
             }).join('');
@@ -1861,13 +1870,13 @@
 
             // Update tag counts
             presetTags.forEach(tag => {
-                const count = store.vocabulary.filter(v => v.tags.includes(tag)).length;
+                const count = store.vocabulary.filter(v => (v.tags || []).includes(tag)).length;
                 const countEl = document.getElementById(`count-${tag}`);
                 if (countEl) countEl.textContent = count;
             });
 
             store.customTags.forEach(tag => {
-                const count = store.vocabulary.filter(v => v.tags.includes(tag)).length;
+                const count = store.vocabulary.filter(v => (v.tags || []).includes(tag)).length;
             });
         }
 
@@ -1881,7 +1890,7 @@
             // Apply filters
             if (activeFilters.length > 0) {
                 filtered = filtered.filter(v =>
-                    activeFilters.some(f => v.tags.includes(f))
+                    activeFilters.some(f => (v.tags || []).includes(f))
                 );
             }
 
@@ -1890,9 +1899,9 @@
                 const query = searchQuery.toLowerCase();
                 filtered = filtered.filter(v =>
                     v.word.toLowerCase().includes(query) ||
-                    v.meanings.some(m =>
-                        m.definitions.some(d =>
-                            d.definition.toLowerCase().includes(query)
+                    (v.meanings || []).some(m =>
+                        (m.definitions || []).some(d =>
+                            (d.definition || '').toLowerCase().includes(query)
                         )
                     )
                 );
@@ -1920,6 +1929,29 @@
             if (filtered.length === 0) {
                 container.innerHTML = '';
                 emptyState.style.display = 'block';
+                if (activeFilters.length > 0 || searchQuery) {
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </div>
+                        <h3 class="empty-title">没有匹配的词汇</h3>
+                        <p>当前筛选条件下暂无结果，可点击上方标签取消筛选或清空搜索框</p>
+                        <button type="button" class="search-btn" style="margin-top:12px" onclick="clearFiltersAndSearch()">清除筛选与搜索</button>
+                    `;
+                } else {
+                    emptyState.innerHTML = `
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="empty-title">还没有收藏词汇</h3>
+                        <p>搜索单词并点击星标按钮开始添加</p>
+                    `;
+                }
                 return;
             }
 
@@ -1959,7 +1991,7 @@
                         <div class="vocab-definition">${firstDef}</div>
                         <div class="vocab-footer">
                             <div class="vocab-tags">
-                                ${vocab.tags.slice(0, 3).map(t => `<span class="vocab-tag">${t}</span>`).join('')}
+                                ${(vocab.tags || []).slice(0, 3).map(t => `<span class="vocab-tag">${t}</span>`).join('')}
                             </div>
                             <div class="vocab-date">${date}</div>
                         </div>
@@ -2045,25 +2077,66 @@
 
             if (index === -1) {
                 activeFilters.push(tag);
-                element.classList.add('active');
+                if (element) element.classList.add('active');
             } else {
                 activeFilters.splice(index, 1);
-                element.classList.remove('active');
+                if (element) element.classList.remove('active');
             }
 
+            syncFilterActiveState();
             renderVocabulary();
         }
 
-        // Header search
+        // 同步侧边栏所有筛选标签的 .active 状态
+        function syncFilterActiveState() {
+            presetTags.forEach(tag => {
+                const el = document.getElementById('count-' + tag);
+                if (el && el.parentElement) {
+                    const parent = el.closest('.tag');
+                    if (parent) {
+                        if (activeFilters.includes(tag)) parent.classList.add('active');
+                        else parent.classList.remove('active');
+                    }
+                }
+            });
+            document.querySelectorAll('#customTagsList .tag[data-tag]').forEach(el => {
+                const tag = el.getAttribute('data-tag');
+                if (tag !== null) {
+                    if (activeFilters.includes(tag)) el.classList.add('active');
+                    else el.classList.remove('active');
+                }
+            });
+        }
+
+        // Header search：输入时实时筛选已收藏词汇
         function handleHeaderSearch(event) {
             if (event.key === 'Enter') {
                 performHeaderSearch();
+                return;
             }
+            searchQuery = document.getElementById('headerSearchInput').value.trim();
+            renderVocabulary();
         }
 
         function performHeaderSearch() {
             searchQuery = document.getElementById('headerSearchInput').value.trim();
             renderVocabulary();
+        }
+
+        // 清除所有筛选和搜索
+        function clearFiltersAndSearch() {
+            activeFilters = [];
+            searchQuery = '';
+            const headerInput = document.getElementById('headerSearchInput');
+            if (headerInput) headerInput.value = '';
+            syncFilterActiveState();
+            renderVocabulary();
+        }
+
+        // 点击顶部「X 词汇」跳转到词汇库列表
+        function scrollToVocabulary() {
+            const el = document.getElementById('vocabularySection');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // Sort vocabulary
