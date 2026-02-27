@@ -1,6 +1,7 @@
 """
 VocabVault 后端 - Flask
 提供 / 返回前端页面，/api/search 查词（优先 Free Dictionary API，回退 MiniMax）
+支持云端同步（Supabase）
 """
 import os
 import re
@@ -8,12 +9,25 @@ import json
 import requests
 from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory
+from supabase import create_client, Client
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder=BASE, static_url_path='')
 
 # 从环境变量读取，Render 上可配置
 MINIMAX_API_KEY = os.environ.get('MINIMAX_API_KEY', '')
+
+# Supabase 配置
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')
+
+# 初始化 Supabase 客户端（如果配置了）
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print('Supabase 初始化失败:', e)
 
 FREE_DICT_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en'
 MINIMAX_URL = 'https://api.minimax.io/anthropic/v1/messages'
@@ -170,6 +184,92 @@ def search():
         return jsonify({
             'error': f'短语查询暂时不可用。请确认已在 Render 环境变量中配置 MINIMAX_API_KEY。错误详情: {str(e)[:100]}'
         }), 200  # 返回 200 让前端能显示错误信息
+
+
+# ========== 数据同步 API ==========
+
+@app.route('/api/sync/load', methods=['GET'])
+def load_data():
+    """加载云端数据"""
+    if not supabase:
+        return jsonify({'error': 'Cloud sync not configured'}), 500
+    try:
+        response = supabase.table('vocabulary').select('*').order('created_at', desc=True).execute()
+        vocabulary = response.data or []
+        tags_response = supabase.table('custom_tags').select('*').execute()
+        custom_tags = tags_response.data or []
+        return jsonify({
+            'vocabulary': vocabulary,
+            'customTags': [t['tag'] for t in custom_tags]
+        })
+    except Exception as e:
+        print('加载数据失败:', e)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/sync/save', methods=['POST'])
+def save_data():
+    """保存数据到云端（完整覆盖）"""
+    if not supabase:
+        return jsonify({'error': 'Cloud sync not configured'}), 500
+    data = request.get_json() or {}
+    vocabulary = data.get('vocabulary', [])
+    custom_tags = data.get('customTags', [])
+    try:
+        supabase.table('vocabulary').delete().neq('id', '').execute()
+        if vocabulary:
+            supabase.table('vocabulary').insert(vocabulary).execute()
+        supabase.table('custom_tags').delete().neq('id', '').execute()
+        if custom_tags:
+            tags_data = [{'tag': t} for t in custom_tags]
+            supabase.table('custom_tags').insert(tags_data).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print('保存数据失败:', e)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/sync/add', methods=['POST'])
+def add_word():
+    """添加单个词汇"""
+    if not supabase:
+        return jsonify({'error': 'Cloud sync not configured'}), 500
+    word = request.get_json() or {}
+    try:
+        supabase.table('vocabulary').insert(word).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print('添加词汇失败:', e)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/sync/delete/<word_id>', methods=['DELETE'])
+def delete_word(word_id):
+    """删除单个词汇"""
+    if not supabase:
+        return jsonify({'error': 'Cloud sync not configured'}), 500
+    try:
+        supabase.table('vocabulary').delete().eq('id', word_id).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print('删除词汇失败:', e)
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/sync/update', methods=['POST'])
+def update_word():
+    """更新词汇"""
+    if not supabase:
+        return jsonify({'error': 'Cloud sync not configured'}), 500
+    data = request.get_json() or {}
+    word_id = data.get('id')
+    updates = {k: v for k, v in data.items() if k != 'id'}
+    try:
+        supabase.table('vocabulary').update(updates).eq('id', word_id).execute()
+        return jsonify({'ok': True})
+    except Exception as e:
+        print('更新词汇失败:', e)
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

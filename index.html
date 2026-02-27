@@ -1268,6 +1268,68 @@
             }
         };
 
+        // Cloud sync
+        const SYNC_ENABLED = true;  // Set to false to disable cloud sync
+        const CLOUD_URL = '/api/sync';
+
+        // Load data from cloud or localStorage
+        async function loadStore() {
+            if (SYNC_ENABLED) {
+                try {
+                    const res = await fetch(CLOUD_URL + '/load');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.vocabulary && data.vocabulary.length > 0) {
+                            store.vocabulary = data.vocabulary;
+                            store.customTags = data.customTags || [];
+                            // Also save to localStorage as backup
+                            localStorage.setItem('vocabvault_data', JSON.stringify(store));
+                            console.log('Loaded from cloud:', store.vocabulary.length, 'words');
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Cloud load failed, using localStorage:', e);
+                }
+            }
+            // Fallback to localStorage
+            const saved = localStorage.getItem('vocabvault_data');
+            if (saved) {
+                store = JSON.parse(saved);
+            }
+        }
+
+        // Save data to cloud and localStorage
+        async function saveStore() {
+            localStorage.setItem('vocabvault_data', JSON.stringify(store));
+            if (SYNC_ENABLED && store.vocabulary.length > 0) {
+                try {
+                    await fetch(CLOUD_URL + '/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            vocabulary: store.vocabulary,
+                            customTags: store.customTags
+                        })
+                    });
+                    console.log('Saved to cloud');
+                } catch (e) {
+                    console.warn('Cloud save failed:', e);
+                }
+            }
+        }
+
+        // Initialize app after data is loaded
+        async function initApp() {
+            await loadStore();
+            updateStats();
+            renderVocabulary();
+            renderCustomTags();
+        }
+
+        // Start the app
+        initApp();
+
         // Current search result
         let currentResult = null;
         let currentAudioUrl = null;
@@ -1277,27 +1339,6 @@
 
         // Preset tags
         const presetTags = ['Easy', 'Medium', 'Hard', 'Work', 'Life'];
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadStore();
-            updateStats();
-            renderVocabulary();
-            renderCustomTags();
-        });
-
-        // Load data from localStorage
-        function loadStore() {
-            const saved = localStorage.getItem('vocabvault_data');
-            if (saved) {
-                store = JSON.parse(saved);
-            }
-        }
-
-        // Save data to localStorage
-        function saveStore() {
-            localStorage.setItem('vocabvault_data', JSON.stringify(store));
-        }
 
         // Show toast notification
         function showToast(message, type = '') {
