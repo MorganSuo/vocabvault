@@ -215,11 +215,14 @@ def load_data():
 @app.route('/api/sync/save', methods=['POST'])
 def save_data():
     """保存数据到云端（完整覆盖）"""
+    print('save_data called, supabase:', supabase)
     if not supabase:
         return jsonify({'error': 'Cloud sync not configured'}), 500
     data = request.get_json() or {}
     vocabulary = data.get('vocabulary', [])
     custom_tags = data.get('customTags', [])
+    print('Saving vocabulary count:', len(vocabulary))
+    print('Saving custom_tags:', custom_tags)
     try:
         # Delete all existing vocabulary
         supabase.table('vocabulary').delete().neq('id', 'temp-none').execute()
