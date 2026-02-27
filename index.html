@@ -1301,10 +1301,11 @@
 
         // Save data to cloud and localStorage
         async function saveStore() {
+            console.log('saveStore called, vocabulary count:', store.vocabulary.length);
             localStorage.setItem('vocabvault_data', JSON.stringify(store));
             if (SYNC_ENABLED && store.vocabulary.length > 0) {
                 try {
-                    await fetch(CLOUD_URL + '/save', {
+                    const res = await fetch(CLOUD_URL + '/save', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1312,7 +1313,13 @@
                             customTags: store.customTags
                         })
                     });
-                    console.log('Saved to cloud');
+                    console.log('Save response status:', res.status);
+                    if (!res.ok) {
+                        const err = await res.text();
+                        console.error('Save failed:', err);
+                    } else {
+                        console.log('Saved to cloud successfully');
+                    }
                 } catch (e) {
                     console.warn('Cloud save failed:', e);
                 }
