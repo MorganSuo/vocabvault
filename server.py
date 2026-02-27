@@ -130,17 +130,20 @@ def search():
             json={
                 'model': 'MiniMax-M2.5',
                 'max_tokens': 2000,
-                'system': '你是一个专业的英语词典和语言学习助手，擅长解释单词、短语和表达方式的含义、用法和例句。',
+                'system': [{'type': 'text', 'text': '你是一个专业的英语词典和语言学习助手，擅长解释单词、短语和表达方式的含义、用法和例句。'}],
                 'messages': [{'role': 'user', 'content': [{'type': 'text', 'text': prompt}]}],
                 'temperature': 1.0
             },
             headers={
-                'x-api-key': MINIMAX_API_KEY,
-                'Content-Type': 'application/json',
-                'anthropic-version': '2023-06-01'
+                'Authorization': 'Bearer ' + MINIMAX_API_KEY,
+                'Content-Type': 'application/json'
             },
             timeout=30
         )
+        # 打印响应以便调试
+        print('MiniMax 响应状态:', r.status_code)
+        if r.status_code != 200:
+            print('MiniMax 错误响应:', r.text[:500])
         r.raise_for_status()
         resp = r.json()
         content_list = resp.get('content') or []
@@ -160,16 +163,13 @@ def search():
             return jsonify(json.loads(m.group(0)))
         return jsonify({'word': query, 'rawResponse': content, 'isRawFormat': True})
     except requests.RequestException as e:
-        err = {}
+        err_body = ''
         if hasattr(e, 'response') and e.response is not None:
-            try:
-                err = e.response.json() if e.response.headers.get('content-type', '').startswith('application/json') else {}
-            except Exception:
-                pass
-        msg = err.get('error', {}).get('message', None) if isinstance(err.get('error'), dict) else str(e)
-        if not msg:
-            msg = getattr(e, 'message', str(e))
-        return jsonify({'error': f'API调用失败: {msg}'}), 500
+            err_body = e.response.text[:300]
+        # 返回更详细的错误信息给前端
+        return jsonify({
+            'error': f'短语查询暂时不可用。请确认已在 Render 环境变量中配置 MINIMAX_API_KEY。错误详情: {str(e)[:100]}'
+        }), 200  # 返回 200 让前端能显示错误信息
 
 
 if __name__ == '__main__':

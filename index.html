@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VocabVault - 英语词汇宝库</title>
+    <title>VocabVault - English Vocabulary Vault</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1062,7 +1062,7 @@
             <span class="logo-text">VocabVault</span>
         </a>
         <div class="header-search">
-            <input type="text" id="headerSearchInput" placeholder="搜索已收藏的词汇..." onkeyup="handleHeaderSearch(event)">
+            <input type="text" id="headerSearchInput" placeholder="Search saved words..." onkeyup="handleHeaderSearch(event)">
             <button onclick="performHeaderSearch()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"/>
@@ -1071,13 +1071,13 @@
             </button>
         </div>
         <div class="header-actions">
-            <div class="stats-badge" onclick="scrollToVocabulary()" role="button" title="跳转到我的词汇库">
+            <div class="stats-badge" onclick="scrollToVocabulary()" role="button" title="Go to My Vocabulary">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                     <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                     <path d="M2 17l10 5 10-5"/>
                     <path d="M2 12l10 5 10-5"/>
                 </svg>
-                <strong id="vocabCount">0</strong> 词汇
+                <strong id="vocabCount">0</strong> words
             </div>
         </div>
     </header>
@@ -1089,74 +1089,50 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-stats">
-                <h4>学习统计</h4>
+                <h4>Learning Stats</h4>
                 <div class="stat-item">
-                    <span>总词汇量</span>
+                    <span>Total Words</span>
                     <span class="stat-value" id="totalVocab">0</span>
                 </div>
                 <div class="stat-item">
-                    <span>本月新增</span>
+                    <span>This Month</span>
                     <span class="stat-value" id="monthlyVocab">0</span>
                 </div>
                 <div class="stat-item">
-                    <span>自定义标签</span>
+                    <span>Custom Tags</span>
                     <span class="stat-value" id="customTagCount">0</span>
                 </div>
             </div>
 
             <div class="sidebar-section">
-                <h4 class="sidebar-title">难度筛选</h4>
+                <h4 class="sidebar-title">Difficulty</h4>
                 <div class="tag-list" id="difficultyTags">
-                    <span class="tag tag-preset" onclick="filterByTag('简单', this)">
-                        简单 <span class="tag-count" id="count-简单">0</span>
+                    <span class="tag tag-preset" onclick="filterByTag('Easy', this)">
+                        Easy <span class="tag-count" id="count-Easy">0</span>
                     </span>
-                    <span class="tag tag-preset" onclick="filterByTag('中等', this)">
-                        中等 <span class="tag-count" id="count-中等">0</span>
+                    <span class="tag tag-preset" onclick="filterByTag('Medium', this)">
+                        Medium <span class="tag-count" id="count-Medium">0</span>
                     </span>
-                    <span class="tag tag-preset" onclick="filterByTag('困难', this)">
-                        困难 <span class="tag-count" id="count-困难">0</span>
-                    </span>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h4 class="sidebar-title">词性筛选</h4>
-                <div class="tag-list" id="posTags">
-                    <span class="tag tag-preset" onclick="filterByTag('名词', this)">
-                        名词 <span class="tag-count" id="count-名词">0</span>
-                    </span>
-                    <span class="tag tag-preset" onclick="filterByTag('动词', this)">
-                        动词 <span class="tag-count" id="count-动词">0</span>
-                    </span>
-                    <span class="tag tag-preset" onclick="filterByTag('形容词', this)">
-                        形容词 <span class="tag-count" id="count-形容词">0</span>
-                    </span>
-                    <span class="tag tag-preset" onclick="filterByTag('副词', this)">
-                        副词 <span class="tag-count" id="count-副词">0</span>
+                    <span class="tag tag-preset" onclick="filterByTag('Hard', this)">
+                        Hard <span class="tag-count" id="count-Hard">0</span>
                     </span>
                 </div>
             </div>
 
             <div class="sidebar-section">
-                <h4 class="sidebar-title">来源筛选</h4>
+                <h4 class="sidebar-title">Source</h4>
                 <div class="tag-list" id="sourceTags">
-                    <span class="tag tag-preset" onclick="filterByTag('日常', this)">
-                        日常 <span class="tag-count" id="count-日常">0</span>
+                    <span class="tag tag-preset" onclick="filterByTag('Work', this)">
+                        Work <span class="tag-count" id="count-Work">0</span>
                     </span>
-                    <span class="tag tag-preset" onclick="filterByTag('商务', this)">
-                        商务 <span class="tag-count" id="count-商务">0</span>
-                    </span>
-                    <span class="tag tag-preset" onclick="filterByTag('学术', this)">
-                        学术 <span class="tag-count" id="count-学术">0</span>
-                    </span>
-                    <span class="tag tag-preset" onclick="filterByTag('考试', this)">
-                        考试 <span class="tag-count" id="count-考试">0</span>
+                    <span class="tag tag-preset" onclick="filterByTag('Life', this)">
+                        Life <span class="tag-count" id="count-Life">0</span>
                     </span>
                 </div>
             </div>
 
             <div class="sidebar-section">
-                <h4 class="sidebar-title">自定义标签</h4>
+                <h4 class="sidebar-title">Custom Tags</h4>
                 <div class="tag-list" id="customTagsList">
                 </div>
             </div>
@@ -1166,18 +1142,18 @@
         <main class="content">
             <!-- Search Section -->
             <section class="search-section">
-                <h1 class="search-title">探索词汇世界</h1>
-                <p class="search-subtitle">输入单词或短语，获取详细释义、例句和发音</p>
+                <h1 class="search-title">Explore the World of Words</h1>
+                <p class="search-subtitle">Enter a word or phrase to get detailed definitions, examples, and pronunciation</p>
                 <div class="search-box">
                     <div class="search-input-wrapper">
-                        <input type="text" id="searchInput" placeholder="输入英语单词或短语..." onkeyup="handleSearchKeyup(event)">
+                        <input type="text" id="searchInput" placeholder="Enter an English word or phrase..." onkeyup="handleSearchKeyup(event)">
                     </div>
                     <button class="search-btn" id="searchBtn" onclick="searchWord()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
                             <path d="m21 21-4.35-4.35"/>
                         </svg>
-                        查询
+                        Search
                     </button>
                 </div>
             </section>
@@ -1188,7 +1164,7 @@
             <!-- Loading -->
             <div class="loading" id="loading">
                 <div class="loading-spinner"></div>
-                <p>正在查询...</p>
+                <p>Searching...</p>
             </div>
 
             <!-- Result Card -->
@@ -1217,13 +1193,13 @@
                 </div>
 
                 <div class="tag-selection" id="tagSelection">
-                    <div class="tag-selection-title">为词汇添加标签：</div>
-                    <p class="tag-selection-hint">点击标签可选中/取消，收藏时会一并保存</p>
+                    <div class="tag-selection-title">Add tags to this word:</div>
+                    <p class="tag-selection-hint">Click to select/deselect. Tags will be saved with the word.</p>
                     <div class="tag-selection-list" id="tagSelectionList">
                     </div>
                     <div class="tag-input-wrapper">
-                        <input type="text" id="customTagInput" placeholder="添加自定义标签..." onkeyup="if(event.key==='Enter')addCustomTag()">
-                        <button type="button" onclick="addCustomTag()">添加</button>
+                        <input type="text" id="customTagInput" placeholder="Add custom tag..." onkeyup="if(event.key==='Enter')addCustomTag()">
+                        <button type="button" onclick="addCustomTag()">Add</button>
                     </div>
                 </div>
             </div>
@@ -1231,13 +1207,13 @@
             <!-- Vocabulary List -->
             <section class="vocabulary-section" id="vocabularySection">
                 <div class="vocabulary-header">
-                    <h2 class="vocabulary-title">我的词汇库</h2>
+                    <h2 class="vocabulary-title">My Vocabulary</h2>
                     <div class="vocabulary-controls">
                         <select class="sort-select" id="sortSelect" onchange="sortVocabulary()">
-                            <option value="date-desc">最近添加</option>
-                            <option value="date-asc">最早添加</option>
-                            <option value="alpha-asc">字母 A-Z</option>
-                            <option value="alpha-desc">字母 Z-A</option>
+                            <option value="date-desc">Recently Added</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="alpha-asc">A-Z</option>
+                            <option value="alpha-desc">Z-A</option>
                         </select>
                         <div class="view-toggle">
                             <button class="active" id="gridViewBtn" onclick="setViewMode('grid')">
@@ -1272,8 +1248,8 @@
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                         </svg>
                     </div>
-                    <h3 class="empty-title">还没有收藏词汇</h3>
-                    <p>搜索单词并点击星标按钮开始添加</p>
+                    <h3 class="empty-title">No words saved yet</h3>
+                    <p>Search for words and click the star button to add them</p>
                 </div>
             </section>
         </main>
@@ -1300,7 +1276,7 @@
         let searchQuery = '';
 
         // Preset tags
-        const presetTags = ['简单', '中等', '困难', '名词', '动词', '形容词', '副词', '日常', '商务', '学术', '考试'];
+        const presetTags = ['Easy', 'Medium', 'Hard', 'Work', 'Life'];
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -1356,7 +1332,7 @@
             const query = input.value.trim();
 
             if (!query) {
-                showError('请输入要查询的单词或短语');
+                showError('Please enter a word or phrase to search');
                 return;
             }
 
@@ -1370,7 +1346,7 @@
                 const resultData = await callMiniMaxAPI(query);
 
                 if (!resultData) {
-                    throw new Error('API调用失败，请稍后重试');
+                    throw new Error('API call failed, please try again later');
                 }
 
                 if (resultData.error) {
@@ -1395,34 +1371,34 @@
         async function callMiniMaxAPI(query) {
             const API_KEY = 'sk-api-Spn9lyvxwQoK5njgHtYHcDGN3Es4XnQ5swyD4_QLS23j7kxkWuhHlD_7SZsZ3jOdm-XKQnQO5vJQ3vA1d9Lik1sGiod_1X79RDVZrlvh8YB1iU8ZaWrbRiw';
 
-            const prompt = `你是一个专业的英语词典和语言学习助手。请为用户提供关于"${query}"的详细信息，包括：
+            const prompt = `You are a professional English dictionary and language learning assistant. Please provide the user with detailed information about "${query}", including:
 
-1. 单词/短语及其正确拼写
-2. 音标（IPA格式）
-3. 词性（名词/动词/形容词/副词/短语等）
-4. 详细的中文释义
-5. 至少3个英文例句（带中文翻译）
-6. 同义词
-7. 使用场景说明
+1. The word/phrase and its correct spelling
+2. Phonetic transcription (IPA format)
+3. Part of speech (noun/verb/adjective/adverb/phrase etc.)
+4. Detailed English definitions
+5. At least 3 example sentences (with translations if possible)
+6. Synonyms
+7. Usage notes
 
-请以JSON格式返回结果，格式如下：
+Please return the result in JSON format:
 {
-  "word": "查询的单词或短语",
-  "phonetic": "音标",
-  "partOfSpeech": "词性",
+  "word": "the word or phrase",
+  "phonetic": "phonetic transcription",
+  "partOfSpeech": "part of speech",
   "definitions": [
     {
-      "meaning": "释义内容",
-      "example": "例句",
-      "translation": "例句翻译"
+      "meaning": "definition",
+      "example": "example sentence",
+      "translation": "translation"
     }
   ],
-  "synonyms": ["同义词1", "同义词2"],
-  "usage": "使用说明"
+  "synonyms": ["synonym1", "synonym2"],
+  "usage": "usage notes"
 }`;
 
             try {
-                // 使用当前站点 API（本地与 Render 部署均可用）
+                // Use current site API (works for both local and Render deployment)
                 const apiUrl = '/api/search';
                 let response = await fetch(apiUrl, {
                     method: 'POST',
@@ -1434,24 +1410,24 @@
 
                 if (!response.ok) {
                     const msg = (response.status >= 500)
-                        ? '服务暂时不可用，请稍后再试'
-                        : (response.status === 400 ? '请求参数有误' : '请求失败 (' + response.status + ')');
+                        ? 'Service temporarily unavailable, please try again later'
+                        : (response.status === 400 ? 'Invalid request' : 'Request failed (' + response.status + ')');
                     throw new Error(msg);
                 }
 
                 const data = await response.json();
 
-                // 后端直接返回错误（如未配置 Key）
+                // Backend directly returns error (e.g., Key not configured)
                 if (data.error) {
                     return { error: data.error };
                 }
 
-                // 后端已返回统一格式（Free Dictionary 或已解析的 MiniMax），直接使用
+                // Backend returned unified format (Free Dictionary or parsed MiniMax), use directly
                 if (data.word && (data.definitions || data.meanings)) {
                     return data;
                 }
 
-                // 解析响应（原始 MiniMax content[] 格式）
+                // Parse response (original MiniMax content[] format)
                 if (data.content && data.content.length > 0) {
                     let content = '';
                     for (const item of data.content) {
@@ -1462,10 +1438,10 @@
                     }
 
                     if (!content) {
-                        throw new Error('未找到文本内容');
+                        throw new Error('No text content found');
                     }
 
-                    // 尝试解析 JSON
+                    // Try parsing JSON
                     try {
                         const jsonBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
                         if (jsonBlockMatch) {
@@ -1489,14 +1465,14 @@
                     }
                 }
 
-                throw new Error('API 未返回有效响应');
+                throw new Error('API did not return valid response');
 
             } catch (error) {
                 console.error('API Error:', error);
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    return { error: '网络错误，请检查后端服务是否运行' };
+                    return { error: 'Network error, please check if the backend service is running' };
                 }
-                return { error: 'API调用失败: ' + error.message };
+                return { error: 'API call failed: ' + error.message };
             }
         }
 
@@ -1668,7 +1644,7 @@
                 if (meaning.synonyms && meaning.synonyms.length > 0) {
                     html += `
                         <div class="synonyms-section">
-                            <div class="synonyms-title">同义词</div>
+                            <div class="synonyms-title">Synonyms</div>
                             <div class="synonyms-list">
                                 ${meaning.synonyms.slice(0, 10).map(s => `<span class="synonym-tag">${s}</span>`).join('')}
                             </div>
@@ -1684,7 +1660,7 @@
             if (data.rawExplanation) {
                 meaningsSection.innerHTML += `
                     <div class="llm-explanation" style="margin-top: 20px; padding: 16px; background: var(--secondary); border-radius: var(--radius-md);">
-                        <div style="font-weight: 600; margin-bottom: 12px; color: var(--primary);">详细解释</div>
+                        <div style="font-weight: 600; margin-bottom: 12px; color: var(--primary);">Detailed Explanation</div>
                         <div style="white-space: pre-wrap; line-height: 1.8; font-size: 14px;">${data.rawExplanation}</div>
                     </div>
                 `;
@@ -1694,7 +1670,7 @@
             if (data.phraseExamples && data.phraseExamples.length > 0) {
                 meaningsSection.innerHTML += `
                     <div class="phrase-examples" style="margin-top: 20px;">
-                        <div style="font-weight: 600; margin-bottom: 12px; color: var(--text);">短语用法</div>
+                        <div style="font-weight: 600; margin-bottom: 12px; color: var(--text);">Phrase Usage</div>
                         ${data.phraseExamples.map(ex => `<div style="padding: 8px 0; border-bottom: 1px solid var(--border);">• ${ex}</div>`).join('')}
                     </div>
                 `;
@@ -1704,7 +1680,7 @@
             if (data.usage) {
                 meaningsSection.innerHTML += `
                     <div class="usage-notes" style="margin-top: 20px; padding: 16px; background: rgba(212, 168, 83, 0.1); border-radius: var(--radius-md); border-left: 3px solid var(--accent);">
-                        <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent);">使用说明</div>
+                        <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent);">Usage Notes</div>
                         <div style="font-size: 14px;">${data.usage}</div>
                     </div>
                 `;
@@ -1721,18 +1697,18 @@
         // Get Chinese POS
         function getPOSChinese(pos) {
             const map = {
-                'noun': '名词',
-                'verb': '动词',
-                'adjective': '形容词',
-                'adverb': '副词',
-                'pronoun': '代词',
-                'preposition': '介词',
-                'conjunction': '连词',
-                'interjection': '感叹词',
-                'word': '词汇',
-                'phrase': '短语',
-                'idiom': '习语',
-                'expression': '表达'
+                'noun': 'Noun',
+                'verb': 'Verb',
+                'adjective': 'Adjective',
+                'adverb': 'Adverb',
+                'pronoun': 'Pronoun',
+                'preposition': 'Preposition',
+                'conjunction': 'Conjunction',
+                'interjection': 'Interjection',
+                'word': 'Word',
+                'phrase': 'Phrase',
+                'idiom': 'Idiom',
+                'expression': 'Expression'
             };
             return map[pos.toLowerCase()] || pos;
         }
@@ -1743,7 +1719,7 @@
                 const audio = new Audio(currentAudioUrl);
                 audio.play();
             } else {
-                showToast('暂无发音', 'error');
+                showToast('No audio available', 'error');
             }
         }
 
@@ -1773,7 +1749,7 @@
                 updateFavoriteButton();
                 updateStats();
                 renderVocabulary();
-                showToast('已从词汇库中移除');
+                showToast('Removed from vocabulary');
             } else {
                 // Add to vocabulary
                 const vocabItem = {
@@ -1792,11 +1768,11 @@
                 updateFavoriteButton();
                 updateStats();
                 renderVocabulary();
-                showToast('已添加到词汇库', 'success');
+                showToast('Added to vocabulary', 'success');
             }
         }
 
-        // Render tag selection：显示全部标签，已选高亮
+        // Render tag selection: show all tags, highlight selected
         function renderTagSelection() {
             const container = document.getElementById('tagSelectionList');
             const allTags = [...presetTags, ...store.customTags];
@@ -1807,7 +1783,7 @@
             }).join('');
         }
 
-        // Select tag：点击切换选中/取消
+        // Select tag: click to toggle selection
         function selectTag(tag) {
             const index = selectedTags.indexOf(tag);
             if (index === -1) {
@@ -1833,7 +1809,7 @@
             if (tag) {
                 if (!selectedTags.includes(tag)) selectedTags.push(tag);
                 renderTagSelection();
-                showToast('标签已添加并选中');
+                showToast('Tag added and selected');
             }
         }
 
@@ -1841,7 +1817,7 @@
         function renderCustomTags() {
             const container = document.getElementById('customTagsList');
             if (store.customTags.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-light); font-size: 13px;">暂无自定义标签</p>';
+                container.innerHTML = '<p style="color: var(--text-light); font-size: 13px;">No custom tags yet</p>';
                 return;
             }
 
@@ -1936,9 +1912,9 @@
                                 <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
                         </div>
-                        <h3 class="empty-title">没有匹配的词汇</h3>
-                        <p>当前筛选条件下暂无结果，可点击上方标签取消筛选或清空搜索框</p>
-                        <button type="button" class="search-btn" style="margin-top:12px" onclick="clearFiltersAndSearch()">清除筛选与搜索</button>
+                        <h3 class="empty-title">No matching words</h3>
+                        <p>No results with current filters. Click tags above to remove filters or clear the search box.</p>
+                        <button type="button" class="search-btn" style="margin-top:12px" onclick="clearFiltersAndSearch()">Clear Filters & Search</button>
                     `;
                 } else {
                     emptyState.innerHTML = `
@@ -1948,8 +1924,8 @@
                                 <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                             </svg>
                         </div>
-                        <h3 class="empty-title">还没有收藏词汇</h3>
-                        <p>搜索单词并点击星标按钮开始添加</p>
+                        <h3 class="empty-title">No words saved yet</h3>
+                        <p>Search for words and click the star button to add them</p>
                     `;
                 }
                 return;
@@ -2062,12 +2038,12 @@
 
         // Delete vocabulary
         function deleteVocab(id) {
-            if (confirm('确定要删除这个词汇吗？')) {
+            if (confirm('Are you sure you want to delete this word?')) {
                 store.vocabulary = store.vocabulary.filter(v => v.id !== id);
                 saveStore();
                 updateStats();
                 renderVocabulary();
-                showToast('词汇已删除');
+                showToast('Word deleted');
             }
         }
 
@@ -2087,7 +2063,7 @@
             renderVocabulary();
         }
 
-        // 同步侧边栏所有筛选标签的 .active 状态
+        // Sync active state of all filter tags in sidebar
         function syncFilterActiveState() {
             presetTags.forEach(tag => {
                 const el = document.getElementById('count-' + tag);
@@ -2108,7 +2084,7 @@
             });
         }
 
-        // Header search：输入时实时筛选已收藏词汇
+        // Header search: filter saved vocabulary in real-time as user types
         function handleHeaderSearch(event) {
             if (event.key === 'Enter') {
                 performHeaderSearch();
@@ -2123,7 +2099,7 @@
             renderVocabulary();
         }
 
-        // 清除所有筛选和搜索
+        // Clear all filters and search
         function clearFiltersAndSearch() {
             activeFilters = [];
             searchQuery = '';
@@ -2133,7 +2109,7 @@
             renderVocabulary();
         }
 
-        // 点击顶部「X 词汇」跳转到词汇库列表
+        // Click "X words" in header to scroll to vocabulary list
         function scrollToVocabulary() {
             const el = document.getElementById('vocabularySection');
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
