@@ -216,13 +216,17 @@ def save_data():
     vocabulary = data.get('vocabulary', [])
     custom_tags = data.get('customTags', [])
     try:
-        supabase.table('vocabulary').delete().neq('id', '').execute()
+        # Delete all existing vocabulary
+        supabase.table('vocabulary').delete().neq('id', 'temp-none').execute()
+        # Insert new vocabulary
         if vocabulary:
-            supabase.table('vocabulary').insert(vocabulary).execute()
-        supabase.table('custom_tags').delete().neq('id', '').execute()
+            supabase.table('vocabulary').insert(vocabulary, upsert=True).execute()
+        # Delete all custom tags
+        supabase.table('custom_tags').delete().neq('id', 0).execute()
+        # Insert new custom tags
         if custom_tags:
             tags_data = [{'tag': t} for t in custom_tags]
-            supabase.table('custom_tags').insert(tags_data).execute()
+            supabase.table('custom_tags').insert(tags_data, upsert=True).execute()
         return jsonify({'ok': True})
     except Exception as e:
         print('保存数据失败:', e)
